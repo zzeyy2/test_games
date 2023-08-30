@@ -73,6 +73,7 @@ async def main():
             os.system('cls||clear')
             games = await db.edit(old_title, old_publisher, old_year, new_title, new_publisher, new_year)
         elif '5' in choice:
+            os.system('cls||clear')
             games = await db.get_all()
 
             print(f'Название|Издатель|Год')
