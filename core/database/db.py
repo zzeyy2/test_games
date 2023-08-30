@@ -1,6 +1,7 @@
 import aiosqlite
 from sqlite3 import IntegrityError, OperationalError
 
+
 class GameDB():
 
     def __init__(self, db_file):
@@ -26,28 +27,35 @@ class GameDB():
             values.append(year)
 
         query += " AND ".join(conditions)
+
         try:
             cursor = await self.connection.execute(query, tuple(values))
             return await cursor.fetchall()
+        
         except OperationalError:
             return False
-        
+
     async def add(self, title: str, publisher: str, year: int):
         try:
+
             if not await self.search(title):
+
                 cursor = await self.connection.cursor()
                 await cursor.execute("INSERT INTO games(title, publisher, year) VALUES (?, ?, ?)", (title, publisher, year,))
                 await self.connection.commit()
-                print(f'Данные успешно добавлены!')
+                print('Данные успешно добавлены!')
                 return True
+            
             else:
-                print(f'Игра уже добавлена!')
+                print('Игра уже добавлена!')
                 return False
+            
         except IntegrityError:
             return False
 
     async def remove(self, title: str = None, publisher: str = None, year: int = None):
         cursor = await self.connection.cursor()
+
         if await self.search(title):
             query = 'DELETE FROM games WHERE '
             conditions = []
@@ -65,11 +73,14 @@ class GameDB():
 
             query += " AND ".join(conditions)
             cursor = await self.connection.execute(query, tuple(values))
+
             await self.connection.commit()
-            print(f'Игра успешно удалена!')
+
+            print('Игра успешно удалена!')
             return True
+        
         else:
-            print(f'Игра не найдена!')
+            print('Игра не найдена!')
             return False
 
     async def get_all(self):
@@ -79,10 +90,11 @@ class GameDB():
 
     async def edit(self, title: str = None, publisher: str = None, year: int = None,
                    new_title: str = None, new_publisher: str = None, new_year: int = None):
+        
         if await self.search(title, publisher, year):
+
             query = 'UPDATE games SET '
             conditions = []
-            values = []
             new_Data = []
 
             if new_title:
@@ -92,23 +104,23 @@ class GameDB():
             if new_year:
                 new_Data.append(f'year = "{new_year}"')
 
+
             if title:
-                conditions.append("title = ?")
-                values.append(title)
+                conditions.append(f'title = "{title}"')
             if publisher:
-                conditions.append("publisher = ?")
-                values.append(publisher)
+                conditions.append(f'publisher = "{publisher}"')
             if year:
-                conditions.append("year = ?")
-                values.append(year)
+                conditions.append(f'year = "{year}"')
 
             query += ", ".join(new_Data)
             query += " WHERE "
             query += " AND ".join(conditions)
-            cursor = await self.connection.execute(query, tuple(values))
-            await self.connection.commit()
+            cursor = await self.connection.execute(query)
 
+            await self.connection.commit()
+            print('Успешно изменены данные игры!')
             return True
+        
         else:
-            print(f'Игра не найдена!')
+            print('Игра не найдена!')
             return False
