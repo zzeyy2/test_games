@@ -2,80 +2,120 @@ import asyncio
 from core.database.db import *
 from core.utils import is_digit_or_none
 import os
-from contextlib import suppress
 
 
+async def manager(db: GameDB):
 
-async def main():
-    db = GameDB(r'core/database/db.db')
-    await db.initialize()
+    #Комментариев не добавил, никто мой код кроме тебя читать не будет)
 
-    while True:
-        print("\n1. Добавить игру")
-        print("2. Найти игру")
-        print("3. Удалить игру")
-        print("4. Обновить игру")
-        print("5. Просмотреть все игры")
+    print("\n1. Добавить игру")
+    print("2. Найти игру")
+    print("3. Удалить игру")
+    print("4. Обновить игру")
+    print("5. Просмотреть все игры")
 
-        choice = input(f'Что вы хотите сделать?:\n')
+    choice = input(f'Что вы хотите сделать?:\n')
 
 
-        if '1' in choice:
-            
-            title=input(f'Введите название игры:\n')
-            publisher=input(f'Введите издателя игры:\n')
-            year=is_digit_or_none(input(f'Введите год издания игры:\n'))
-            
-            os.system('cls||clear')
-            await db.add(title, publisher, year)
-            
+    if '1' in choice:
 
-        elif '2' in choice:
-            print(f'Если хотите пропустить шаг - оставьте поле пустым')
+        title=input(f'Введите название игры:\n')
+        publisher=input(f'Введите издателя игры:\n')
+        year=is_digit_or_none(input(f'Введите год издания игры:\n'))
 
-            title=input(f'Введите название игры:\n')
-            publisher=input(f'Введите издателя игры:\n')
-            year=is_digit_or_none(input(f'Введите год издания игры:\n'))
-            
-            os.system('cls||clear')
+        os.system('cls||clear')
+
+        if any((title, publisher, year)):
+        
+            if await db.add(title, publisher, year):
+                print('Данные успешно добавлены!')
+
+            else:
+                print('Игра уже добавлена!')
+
+        else:
+            print('Вы не ввели никаких данных!')
+
+    elif '2' in choice:
+        print(f'Если хотите пропустить шаг - оставьте поле пустым')
+
+        title=input(f'Введите название игры:\n')
+        publisher=input(f'Введите издателя игры:\n')
+        year=is_digit_or_none(input(f'Введите год издания игры:\n'))
+
+
+        os.system('cls||clear')
+
+        if any((title, publisher, year)):
+        
             games = await db.search(title, publisher, year)
-            
 
-            print(f'Название|Издатель|Год')
+            if games:
+                print(f'Название|Издатель|Год')
 
-            for game in games:
-                game = [str(_) for _ in game]
+                for game in games:
+                    game = [str(_) for _ in game]
 
-                print('|'.join(game))
-            
-        elif '3' in choice:
-            print(f'Если хотите пропустить шаг - оставьте поле пустым')
+                    print('|'.join(game))
+            else:
+                print('Игра не найдена!')
 
-            title=input(f'Введите название игры:\n')
-            publisher=input(f'Введите издателя игры:\n')
-            year=is_digit_or_none(input(f'Введите год издания игры:\n'))
-            
-            os.system('cls||clear')
-            games = await db.remove(title, publisher, year)
-            
-        elif '4' in choice:
-            print(f'Если хотите пропустить шаг - оставьте поле пустым')
-
-            old_title=input(f'Введите старое название игры:\n')
-            old_publisher=input(f'Введите старого издателя игры:\n')
-            old_year=is_digit_or_none(input(f'Введите старый год издания игры:\n'))
-            
-            new_title=input(f'Введите новое название игры:\n')
-            new_publisher=input(f'Введите нового издателя игры:\n')
-            new_year=is_digit_or_none(input(f'Введите новый год издания игры:\n'))
-            
+        else:
+            print('Вы не ввели никаких данных!')
 
 
-            os.system('cls||clear')
-            games = await db.edit(old_title, old_publisher, old_year, new_title, new_publisher, new_year)
-        elif '5' in choice:
-            games = await db.get_all()
-            
+    elif '3' in choice:
+        print(f'Если хотите пропустить шаг - оставьте поле пустым')
+
+        title=input(f'Введите название игры:\n')
+        publisher=input(f'Введите издателя игры:\n')
+        year=is_digit_or_none(input(f'Введите год издания игры:\n'))
+        
+        os.system('cls||clear')
+
+        if any((title, publisher, year)):
+
+            if await db.remove(title, publisher, year):
+                print('Игра успешно удалена!')
+            else:
+                print('Игра не найдена!')
+
+        else:
+            print('Вы не ввели никаких данных!')
+
+    elif '4' in choice:
+        print(f'Если хотите пропустить шаг - оставьте поле пустым')
+
+        old_title=input(f'Введите старое название игры:\n')
+        old_publisher=input(f'Введите старого издателя игры:\n')
+        old_year=is_digit_or_none(input(f'Введите старый год издания игры:\n'))
+
+        if not any((old_title, old_publisher, old_year)):
+            print('Вы не ввели данных необходимых для поиска\nПопробуйте еще раз')
+            return
+        
+
+        new_title=input(f'Введите новое название игры:\n')
+        new_publisher=input(f'Введите нового издателя игры:\n')
+        new_year=is_digit_or_none(input(f'Введите новый год издания игры:\n'))
+
+        os.system('cls||clear')
+
+        if not any((new_title, new_publisher, new_year)):
+            print('Вы не ввели данных необходимых для обновления текущих\nДанные игры остались прежними')
+            return
+
+
+        
+        if await db.edit(old_title, old_publisher, old_year, new_title, new_publisher, new_year):
+            print('Успешно изменены данные игры!')
+        else:
+            print('Игра не найдена!')
+        
+
+    elif '5' in choice:
+        games = await db.get_all()
+        if games:
 
             print(f'Название|Издатель|Год')
             for game in games:
@@ -84,9 +124,21 @@ async def main():
                         
                 print('|'.join(game))
 
+        else:
+            print("База данных пустая. Вам нужно добавить игры,\nчто бы пользоваться этой функцией")
+
+async def main():
+    db = GameDB(r'core/database/db.db')
+    await db.initialize()
+    while True:
+        await asyncio.create_task(manager(
+            db=db
+        ))
+        
+
 
 
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.get_event_loop().run_until_complete(main())

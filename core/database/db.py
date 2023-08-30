@@ -43,11 +43,11 @@ class GameDB():
                 cursor = await self.connection.cursor()
                 await cursor.execute("INSERT INTO games(title, publisher, year) VALUES (?, ?, ?)", (title, publisher, year,))
                 await self.connection.commit()
-                print('Данные успешно добавлены!')
+                
                 return True
             
             else:
-                print('Игра уже добавлена!')
+                
                 return False
             
         except IntegrityError:
@@ -76,11 +76,11 @@ class GameDB():
 
             await self.connection.commit()
 
-            print('Игра успешно удалена!')
+            
             return True
         
         else:
-            print('Игра не найдена!')
+            
             return False
 
     async def get_all(self):
@@ -118,9 +118,9 @@ class GameDB():
             cursor = await self.connection.execute(query)
 
             await self.connection.commit()
-            print('Успешно изменены данные игры!')
+            
             return True
         
         else:
-            print('Игра не найдена!')
+            
             return False
