@@ -2,13 +2,16 @@ import aiosqlite
 from sqlite3 import IntegrityError, OperationalError
 
 
-class GameDB():
+class GameDB:
 
     def __init__(self, db_file):
         self.db_name = db_file
 
-    async def initialize(self):
+    async def _initialize(self):
         self.connection = await aiosqlite.connect(self.db_name)
+
+    async def _close(self):
+        await self.connection.close()
 
     async def search(self, title: str = None, publisher: str = None, year: int = None):
         cursor = await self.connection.cursor()
@@ -31,7 +34,7 @@ class GameDB():
         try:
             cursor = await self.connection.execute(query, tuple(values))
             return await cursor.fetchall()
-        
+
         except OperationalError:
             return False
 
@@ -43,13 +46,13 @@ class GameDB():
                 cursor = await self.connection.cursor()
                 await cursor.execute("INSERT INTO games(title, publisher, year) VALUES (?, ?, ?)", (title, publisher, year,))
                 await self.connection.commit()
-                
+
                 return True
-            
+
             else:
-                
+
                 return False
-            
+
         except IntegrityError:
             return False
 
@@ -76,11 +79,10 @@ class GameDB():
 
             await self.connection.commit()
 
-            
             return True
-        
+
         else:
-            
+
             return False
 
     async def get_all(self):
@@ -90,7 +92,7 @@ class GameDB():
 
     async def edit(self, title: str = None, publisher: str = None, year: int = None,
                    new_title: str = None, new_publisher: str = None, new_year: int = None):
-        
+
         if await self.search(title, publisher, year):
 
             query = 'UPDATE games SET '
@@ -103,7 +105,6 @@ class GameDB():
                 new_Data.append(f'publisher = "{new_publisher}"')
             if new_year:
                 new_Data.append(f'year = "{new_year}"')
-
 
             if title:
                 conditions.append(f'title = "{title}"')
@@ -118,9 +119,8 @@ class GameDB():
             cursor = await self.connection.execute(query)
 
             await self.connection.commit()
-            
+
             return True
-        
+
         else:
-            
             return False
